@@ -1,0 +1,24 @@
+-- =============================================================================
+-- СПРАВОЧНИК: исходная схема (шаги 1–2), уже развёрнутая в Supabase.
+-- НЕ запускать повторно на существующей БД — только для истории и отчёта.
+-- Актуальные правки: 01 … 05
+-- =============================================================================
+
+-- См. историю в репозитории / SQL Editor Supabase.
+-- Краткий перечень объектов:
+--
+-- TYPE: order_status
+-- TABLES (16): cities, pharmacies, categories, products, product_categories,
+--   dosage_form, manufacturers, product_details, product_prices, product_images,
+--   users, employees, orders, order_items, order_history, auth_codes
+--
+-- TRIGGERS: trg_calculate_order_total, trg_audit_order_status,
+--   trg_generate_verification_code, trg_prepare_auth_code
+--
+-- FUNCTIONS: calculate_order_total, log_order_status_change,
+--   generate_verification_code, prepare_auth_code, verify_user_code
+--
+-- VIEWS: vw_client_catalog, vw_cart_items, vw_user_order_history,
+--   vw_admin_orders, vw_admin_audit_history
+--
+-- RLS (частично): orders, employees, order_items, order_history — SELECT only

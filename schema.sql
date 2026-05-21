@@ -1,0 +1,17 @@
+-- =============================================================================
+-- schema.sql — НЕ единый файл для наката
+-- Источник истины: supabase/migrations/ (по порядку 000001 → 000005)
+-- =============================================================================
+--
+-- 20250320000001_initial_schema.sql   — таблицы, базовые триггеры, verify_user_code
+-- 20250320000002_integrity_and_rpc.sql — корзина, RLS-хелперы, validate_order, RPC
+-- 20250320000003_views.sql            — все views
+-- 20250320000004_rls.sql              — политики RLS
+-- 20250320000005_crypto.sql           — pgcrypto, пароли employees
+--
+-- Дополнительно:
+--   supabase/seed.sql
+--   supabase/queries/coursework_08.sql
+--   supabase/tests/verify_setup.sql
+--
+-- Документация: docs/HANDOFF.md

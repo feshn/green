@@ -1,0 +1,10 @@
+# Минимальный конфиг для Supabase CLI (опционально)
+# https://supabase.com/docs/guides/cli/config
+
+project_id = "green-pharmacy"
+
+[db]
+major_version = 15
+
+[db.migrations]
+enabled = true
