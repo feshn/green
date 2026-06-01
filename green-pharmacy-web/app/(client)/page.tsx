@@ -8,6 +8,7 @@ import { StaffHintBanner } from "@/components/auth/staff-hint-banner"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getClientSession } from "@/lib/auth/client-session"
 import { fetchCatalog, fetchCategories } from "@/lib/catalog/queries"
+import { parseCategoriesParam } from "@/lib/catalog/parse-categories"
 import type { CatalogSort } from "@/lib/catalog/types"
 import { createClient } from "@/lib/supabase/server"
 
@@ -47,8 +48,9 @@ function GridSkeleton() {
 
 export default async function CatalogPage({ searchParams }: PageProps) {
   const params = await searchParams
-  const { staff, q, category, sort: sortParam } = params
+  const { staff, q, category: categoryParam, sort: sortParam } = params
   const sort = parseSort(sortParam)
+  const selectedCategories = parseCategoriesParam(categoryParam)
 
   const supabase = await createClient()
   const session = await getClientSession(supabase)
@@ -62,7 +64,7 @@ export default async function CatalogPage({ searchParams }: PageProps) {
   }
 
   const [catalogResult, categoriesResult, allCatalogResult] = await Promise.all([
-    fetchCatalog(supabase, { q, category, sort }),
+    fetchCatalog(supabase, { q, categories: selectedCategories, sort }),
     fetchCategories(supabase),
     fetchCatalog(supabase, {}),
   ])
@@ -85,7 +87,9 @@ export default async function CatalogPage({ searchParams }: PageProps) {
     })
   )
 
-  const hasFilters = Boolean(q?.trim() || category || sort !== "popular")
+  const hasFilters = Boolean(
+    q?.trim() || selectedCategories.length > 0 || sort !== "popular"
+  )
 
   return (
     <>
@@ -94,12 +98,12 @@ export default async function CatalogPage({ searchParams }: PageProps) {
         <Suspense fallback={<FiltersSkeleton />}>
           <CatalogFilters
             categories={categories}
-            initialCategory={category ?? ""}
+            initialCategories={selectedCategories}
             initialSort={sort}
           />
         </Suspense>
 
-        <div className="px-4 sm:px-12 lg:px-[194px]">
+        <div className="relative z-0 px-4 sm:px-12 lg:px-[194px]">
           <section aria-label="Список товаров" className="w-full max-w-[1053px] pt-3">
             {!catalogResult.ok ? (
               <CatalogError message={catalogResult.message} />

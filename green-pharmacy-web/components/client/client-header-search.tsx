@@ -20,7 +20,9 @@ type ClientHeaderSearchProps = {
   onActiveChange?: (active: boolean) => void
 }
 
-/** Figma Search (337:628 / 490:766) — h 36px, rounded 12px, bg white */
+const CATALOG_PATH = "/"
+
+/** Figma Search (337:628 / 490:766) — overlay и подсказки только на главной */
 export function ClientHeaderSearch({
   className,
   onActiveChange,
@@ -35,7 +37,8 @@ export function ClientHeaderSearch({
   const rootRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const isActive = focused && pathname === "/"
+  const onCatalog = pathname === CATALOG_PATH
+  const isActive = focused && onCatalog
 
   useEffect(() => {
     onActiveChange?.(isActive)
@@ -44,6 +47,17 @@ export function ClientHeaderSearch({
   useEffect(() => {
     setQuery(searchParams.get("q") ?? "")
   }, [searchParams])
+
+  const prevPathRef = useRef(pathname)
+  useEffect(() => {
+    const leftCatalog =
+      prevPathRef.current === CATALOG_PATH && pathname !== CATALOG_PATH
+    prevPathRef.current = pathname
+    if (leftCatalog) {
+      setFocused(false)
+      inputRef.current?.blur()
+    }
+  }, [pathname])
 
   useEffect(() => {
     if (!isActive || !query.trim()) {
@@ -61,15 +75,16 @@ export function ClientHeaderSearch({
   }, [isActive, query])
 
   useEffect(() => {
-    if (!isActive) return
+    if (!focused) return
     function onPointerDown(event: MouseEvent) {
       if (!rootRef.current?.contains(event.target as Node)) {
         setFocused(false)
+        inputRef.current?.blur()
       }
     }
     document.addEventListener("pointerdown", onPointerDown)
     return () => document.removeEventListener("pointerdown", onPointerDown)
-  }, [isActive])
+  }, [focused])
 
   const pushQuery = useCallback(
     (q: string) => {
@@ -82,10 +97,10 @@ export function ClientHeaderSearch({
       }
       const qs = params.toString()
       startTransition(() => {
-        router.push(qs ? `${pathname}?${qs}` : pathname)
+        router.push(qs ? `${CATALOG_PATH}?${qs}` : CATALOG_PATH)
       })
     },
-    [pathname, router, searchParams]
+    [router, searchParams]
   )
 
   if (pathname === "/register") {
@@ -106,6 +121,10 @@ export function ClientHeaderSearch({
         <div
           className="fixed inset-x-0 top-[72px] bottom-0 z-30 bg-black/50"
           aria-hidden
+          onPointerDown={() => {
+            setFocused(false)
+            inputRef.current?.blur()
+          }}
         />
       ) : null}
 
@@ -139,7 +158,7 @@ export function ClientHeaderSearch({
           {showClear ? (
             <button
               type="button"
-              className="flex size-5 shrink-0 items-center justify-center"
+              className="flex size-5 shrink-0 items-center justify-center p-0"
               aria-label="Очистить поиск"
               onClick={() => {
                 setQuery("")

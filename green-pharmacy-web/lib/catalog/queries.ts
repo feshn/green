@@ -30,9 +30,12 @@ function applyCatalogFilters(
     )
   }
 
-  const category = filters.category?.trim()
-  if (category) {
-    result = result.filter((item) => item.category_name === category)
+  const categories = filters.categories?.filter((name) => name.trim()) ?? []
+  if (categories.length > 0) {
+    const selected = new Set(categories)
+    result = result.filter(
+      (item) => item.category_name != null && selected.has(item.category_name)
+    )
   }
 
   switch (filters.sort) {

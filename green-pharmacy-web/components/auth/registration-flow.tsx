@@ -24,6 +24,7 @@ import {
   type ProfileFormValues,
 } from "@/lib/validations/registration"
 import { Checkbox } from "@/components/ui/checkbox"
+import { clientPrimaryButtonClassName } from "@/components/ui/client-primary-button"
 import {
   TEXT_FIELD_ERROR_SLOT_CLASS,
   TextField,
@@ -39,9 +40,6 @@ type RegistrationFlowProps = {
   initialStep: RegistrationStep
   initialPhone?: string
 }
-
-const PRIMARY_BTN_CLASS =
-  "flex h-11 w-full items-center justify-center rounded-lg bg-brand-green px-3 font-display text-sm font-bold leading-4 text-white transition-colors disabled:cursor-not-allowed disabled:bg-brand-green-disabled"
 
 export function RegistrationFlow({
   initialStep,
@@ -75,6 +73,9 @@ export function RegistrationFlow({
   const phoneDigits = phoneForm.watch("phone")
   const codeValue = codeForm.watch("code")
   const opdAccepted = profileForm.watch("opdAccepted")
+  const profileName = profileForm.watch("name")
+  const profileNameLetters = profileName.replace(/[^\p{L}]/gu, "")
+  const profileCanSubmit = profileNameLetters.length >= 2 && opdAccepted
   const phoneFieldError = phoneForm.formState.errors.phone?.message
   const codeFieldError =
     codeForm.formState.isSubmitted
@@ -226,7 +227,7 @@ export function RegistrationFlow({
           </div>
           <button
             type="submit"
-            className={PRIMARY_BTN_CLASS}
+            className={clientPrimaryButtonClassName}
             disabled={busy || phoneDigits.length !== 10}
           >
             {busy ? "Отправка…" : "Получить код"}
@@ -300,7 +301,7 @@ export function RegistrationFlow({
             </button>
             <button
               type="submit"
-              className={cn(PRIMARY_BTN_CLASS, "flex-1")}
+              className={cn(clientPrimaryButtonClassName, "flex-1")}
               disabled={busy || codeValue.length !== 6}
             >
               {busy ? "Проверка…" : "Продолжить"}
@@ -372,7 +373,11 @@ export function RegistrationFlow({
           </div>
         </div>
 
-        <button type="submit" className={PRIMARY_BTN_CLASS} disabled={busy}>
+        <button
+          type="submit"
+          className={clientPrimaryButtonClassName}
+          disabled={busy || !profileCanSubmit}
+        >
           {busy ? "Сохранение…" : "Зарегистрироваться"}
         </button>
       </div>

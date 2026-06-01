@@ -1,28 +1,41 @@
-import * as React from "react"
+"use client"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import type { ComponentProps } from "react"
 
 import { IconCart } from "@/components/icons/cart"
+import { navIsActive } from "@/lib/nav-is-active"
 import { cn } from "@/lib/utils"
 
-type CartButtonProps = React.ComponentProps<"div"> & {
+type CartButtonProps = ComponentProps<typeof Link> & {
   chipCount?: number
 }
 
-/** Figma Components / Cart button (276:415) */
-function CartButton({ className, chipCount = 0, ...props }: CartButtonProps) {
+/** Figma Cart button (276:415 / 705:1071) */
+function CartButton({ className, chipCount = 0, href, ...props }: CartButtonProps) {
+  const pathname = usePathname()
+  const hrefString = typeof href === "string" ? href : (href?.pathname ?? "")
+  const isCurrent = hrefString ? navIsActive(pathname, hrefString) : false
+
   return (
-    <div className={cn("relative inline-flex shrink-0", className)} {...props}>
-      <div className="flex items-center gap-2 rounded-lg bg-brand-menu py-2 pr-5 pl-3 text-white">
-        <IconCart />
-        <span className="font-display text-[13px] leading-4 text-white">
-          Корзина
-        </span>
-      </div>
+    <Link
+      href={href}
+      aria-current={isCurrent ? "page" : undefined}
+      className={cn(
+        "ui-header-menu-btn ui-header-menu-btn--cart outline-none focus-visible:ring-2 focus-visible:ring-focus",
+        className
+      )}
+      {...props}
+    >
+      <IconCart />
+      <span className="font-display text-[13px] leading-4 text-white">Корзина</span>
       {chipCount > 0 ? (
-        <span className="absolute -top-1.5 -right-1 flex min-w-4 items-center justify-center rounded-[10px] bg-[#fef6e4] px-1 pt-0.5 pb-0.5 text-[13px] leading-3 font-bold text-brand-header">
+        <span className="ui-header-menu-chip">
           {chipCount > 99 ? "99+" : chipCount}
         </span>
       ) : null}
-    </div>
+    </Link>
   )
 }
 

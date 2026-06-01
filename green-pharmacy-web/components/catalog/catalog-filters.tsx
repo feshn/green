@@ -4,6 +4,10 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useTransition } from "react"
 
 import { FilterPill } from "@/components/ui/filter-pill"
+import {
+  parseCategoriesParam,
+  serializeCategoriesParam,
+} from "@/lib/catalog/parse-categories"
 import type { CatalogSort, Category } from "@/lib/catalog/types"
 import { cn } from "@/lib/utils"
 
@@ -13,7 +17,7 @@ export type CategoryWithCount = Category & {
 
 type CatalogFiltersProps = {
   categories: CategoryWithCount[]
-  initialCategory?: string
+  initialCategories?: string[]
   initialSort?: CatalogSort
   className?: string
 }
@@ -27,13 +31,13 @@ const SORT_OPTIONS: { value: CatalogSort; label: string }[] = [
 /** Figma filter bar — Main / Search 01, Sort 01–02 */
 export function CatalogFilters({
   categories,
-  initialCategory = "",
+  initialCategories = [],
   initialSort = "popular",
   className,
 }: CatalogFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
 
   const pushParams = useCallback(
     (updates: Record<string, string | undefined>) => {
@@ -62,14 +66,18 @@ export function CatalogFilters({
     label: category.name,
   }))
 
+  function toggleCategory(name: string) {
+    const current = parseCategoriesParam(searchParams.get("category") ?? undefined)
+    const next = current.includes(name)
+      ? current.filter((item) => item !== name)
+      : [...current, name]
+    pushParams({
+      category: serializeCategoriesParam(next),
+    })
+  }
+
   return (
-    <div
-      className={cn(
-        "relative h-[72px] bg-page",
-        isPending && "opacity-70",
-        className
-      )}
-    >
+    <div className={cn("relative z-40 h-[72px] bg-page", className)}>
       <div className="mx-auto flex h-full max-w-[1440px] items-start px-4 pt-8 sm:px-12 lg:px-[194px]">
         <div className="flex items-center gap-2">
           <FilterPill
@@ -88,15 +96,10 @@ export function CatalogFilters({
           />
           <FilterPill
             displayLabel="Категории"
-            value={initialCategory}
+            values={initialCategories}
             variant="category"
             options={categoryOptions}
-            onChange={(value) => {
-              pushParams({
-                category:
-                  value === initialCategory || !value ? undefined : value,
-              })
-            }}
+            onToggle={toggleCategory}
           />
         </div>
       </div>

@@ -1,15 +1,16 @@
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
-import { ShoppingCart } from "lucide-react"
-
 import { StaffHintBanner } from "@/components/auth/staff-hint-banner"
+import { AddToCartButton } from "@/components/catalog/add-to-cart-button"
 import { ProductLikeStub } from "@/components/icons/like-icon"
 import { ProductGallery } from "@/components/catalog/product-gallery"
 import { ProductInfoColumn } from "@/components/catalog/product-info-column"
 import { ProductRecommendedSection } from "@/components/catalog/product-recommended-section"
+import { isLoggedInClient } from "@/lib/auth/client-access"
 import { getClientSession } from "@/lib/auth/client-session"
 import { buildGalleryImages } from "@/lib/catalog/gallery-images"
 import { formatPrice } from "@/lib/catalog/format"
+import { fetchProductCartQuantity } from "@/lib/cart/queries"
 import {
   fetchCatalogItem,
   fetchProductCategoryChips,
@@ -72,6 +73,11 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
     mainImageUrl: details?.main_image_url,
   })
 
+  const cartQuantity =
+    isLoggedInClient(session) && session.user
+      ? await fetchProductCartQuantity(supabase, session.user.id, productId)
+      : 0
+
   return (
     <>
       <StaffHintBanner staff={staff} />
@@ -100,7 +106,7 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
             details={details}
             pricePanel={
               <div className="rounded-xl bg-white p-3">
-                <div className="mb-3 flex items-start justify-between gap-2">
+                <div className="mb-3 flex items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-xl font-bold tracking-[-0.6px] text-neutral-100">
                       {formatPrice(item.current_price)}
@@ -113,15 +119,11 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
                   </div>
                   <ProductLikeStub />
                 </div>
-                <button
-                  type="button"
-                  disabled
-                  title="Добавление в корзину — E3"
-                  className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-green font-display text-sm font-bold text-white opacity-60"
-                >
-                  <ShoppingCart className="size-4" aria-hidden />
-                  В корзину
-                </button>
+                <AddToCartButton
+                  productId={productId}
+                  isAuthenticated={isLoggedInClient(session)}
+                  initialQuantity={cartQuantity}
+                />
               </div>
             }
           />

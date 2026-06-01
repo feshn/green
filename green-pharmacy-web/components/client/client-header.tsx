@@ -38,19 +38,13 @@ export function ClientHeader({ session }: ClientHeaderProps) {
         </div>
 
         <nav className="flex shrink-0 items-center gap-2" aria-label="Клиент">
-          <Link href="/profile" aria-label="Профиль">
-            <MenuButton>
-              <IconUser />
-            </MenuButton>
-          </Link>
-          <Link href="/orders" aria-label="Заказы">
-            <MenuButton chipCount={orderCount}>
-              <IconBox />
-            </MenuButton>
-          </Link>
-          <Link href="/cart" aria-label="Корзина">
-            <CartButton chipCount={cartCount} />
-          </Link>
+          <MenuButton href="/profile" aria-label="Профиль">
+            <IconUser />
+          </MenuButton>
+          <MenuButton href="/orders" aria-label="Заказы" chipCount={orderCount}>
+            <IconBox />
+          </MenuButton>
+          <CartButton href="/cart" aria-label="Корзина" chipCount={cartCount} />
         </nav>
       </div>
     </header>

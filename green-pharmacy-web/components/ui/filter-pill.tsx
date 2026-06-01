@@ -13,24 +13,29 @@ type FilterOption = {
   label: string
 }
 
-type FilterPillProps = {
+type FilterPillBaseProps = {
   displayLabel: string
-  value: string
   options: FilterOption[]
-  onChange: (value: string) => void
-  variant: "sort" | "category"
   className?: string
 }
 
+type SortFilterPillProps = FilterPillBaseProps & {
+  variant: "sort"
+  value: string
+  onChange: (value: string) => void
+}
+
+type CategoryFilterPillProps = FilterPillBaseProps & {
+  variant: "category"
+  values: string[]
+  onToggle: (value: string) => void
+}
+
+export type FilterPillProps = SortFilterPillProps | CategoryFilterPillProps
+
 /** Figma Segment pill (330:1123) + dropdown (Sort 01–02) */
-export function FilterPill({
-  displayLabel,
-  value,
-  options,
-  onChange,
-  variant,
-  className,
-}: FilterPillProps) {
+export function FilterPill(props: FilterPillProps) {
+  const { displayLabel, options, variant, className } = props
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
 
@@ -46,7 +51,7 @@ export function FilterPill({
   }, [open])
 
   return (
-    <div ref={rootRef} className={cn("relative", className)}>
+    <div ref={rootRef} className={cn("relative z-50", className)}>
       <button
         type="button"
         aria-expanded={open}
@@ -69,10 +74,15 @@ export function FilterPill({
       {open ? (
         <div
           role="listbox"
-          className="absolute top-[calc(100%+10px)] left-0 z-30 flex w-[228px] flex-col gap-3 rounded-lg bg-white px-3 pt-3 pb-4 shadow-[0_16px_20px_rgba(0,0,0,0.1)]"
+          aria-multiselectable={variant === "category" ? true : undefined}
+          className="absolute top-[calc(100%+10px)] left-0 z-50 flex w-[228px] flex-col gap-3 rounded-lg bg-white px-3 pt-3 pb-4 shadow-[0_16px_20px_rgba(0,0,0,0.1)]"
         >
           {options.map((option) => {
-            const selected = option.value === value
+            const selected =
+              variant === "sort"
+                ? option.value === props.value
+                : props.values.includes(option.value)
+
             return (
               <button
                 key={option.value || option.label}
@@ -80,8 +90,12 @@ export function FilterPill({
                 role="option"
                 aria-selected={selected}
                 onClick={() => {
-                  onChange(option.value)
-                  setOpen(false)
+                  if (variant === "sort") {
+                    props.onChange(option.value)
+                    setOpen(false)
+                  } else {
+                    props.onToggle(option.value)
+                  }
                 }}
                 className="flex w-full items-center justify-between text-left font-sans text-[13px] leading-4 text-neutral-100"
               >

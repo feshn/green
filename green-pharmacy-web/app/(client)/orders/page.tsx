@@ -1,20 +1,16 @@
-import Link from "next/link"
 import { redirect } from "next/navigation"
-import { ClipboardList } from "lucide-react"
 
 import { StaffHintBanner } from "@/components/auth/staff-hint-banner"
+import { ClientPageHeader } from "@/components/client/client-page-header"
 import { LoginRequiredCard } from "@/components/client/login-required-card"
-import { buttonVariants } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { OrderHistoryList } from "@/components/orders/order-history-list"
 import { isLoggedInClient } from "@/lib/auth/client-access"
 import { getClientSession } from "@/lib/auth/client-session"
-import { cn } from "@/lib/utils"
+import {
+  fetchOrderHistory,
+  fetchOrderHistoryItems,
+  groupItemsByOrderId,
+} from "@/lib/orders/queries"
 import { createClient } from "@/lib/supabase/server"
 
 type PageProps = {
@@ -43,34 +39,22 @@ export default async function OrdersPage({ searchParams }: PageProps) {
     )
   }
 
+  const orders = await fetchOrderHistory(supabase, session.user!.id)
+  const orderIds = orders.map((o) => o.order_id)
+  const items = await fetchOrderHistoryItems(supabase, orderIds)
+  const grouped = groupItemsByOrderId(items)
+  const itemsByOrderId = Object.fromEntries(grouped.entries())
+
   return (
     <>
       <StaffHintBanner staff={staff} />
-      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center gap-4 p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-[family-name:var(--font-display)]">
-              <ClipboardList className="size-5" aria-hidden />
-              Заказы
-            </CardTitle>
-            <CardDescription>
-              История заказов (`vw_user_order_history`) — этап E3.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {session.orderCount > 0 ? (
-              <p className="text-sm">
-                Заказов в истории:{" "}
-                <span className="font-medium">{session.orderCount}</span>
-              </p>
-            ) : (
-              <p className="text-muted-foreground text-sm">Заказов пока нет.</p>
-            )}
-            <Link href="/" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-              В каталог
-            </Link>
-          </CardContent>
-        </Card>
+      <div className="mx-auto w-full max-w-[1053px] flex-1 px-4 pb-6 sm:px-6 lg:px-0">
+        <ClientPageHeader title="Заказы" />
+        <OrderHistoryList
+          className="mt-5"
+          orders={orders}
+          itemsByOrderId={itemsByOrderId}
+        />
       </div>
     </>
   )

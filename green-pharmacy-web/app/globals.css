@@ -8,7 +8,12 @@
   --page-bg: #f3f6f5;
   --brand-header: #307f6a;
   --brand-menu: #4fa08b;
+  --brand-menu-hover: #52b69c;
+  --brand-menu-pressed: #71c3ae;
+  --brand-menu-active: var(--brand-menu-pressed);
   --brand-green: #1aa481;
+  --brand-green-hover: #0f8c6f;
+  --brand-green-pressed: #0c705b;
   --brand-green-disabled: rgba(26, 164, 129, 0.3);
   --neutral-100: #101915;
   --neutral-70: #4d4d4d;
@@ -84,7 +89,13 @@
   --color-page: var(--page-bg);
   --color-brand-header: var(--brand-header);
   --color-brand-menu: var(--brand-menu);
+  --color-brand-menu-hover: var(--brand-menu-hover);
+  --color-brand-menu-pressed: var(--brand-menu-pressed);
+  --color-brand-menu-active: var(--brand-menu-active);
   --color-brand-green: var(--brand-green);
+  --color-brand-green-hover: var(--brand-green-hover);
+  --color-brand-green-pressed: var(--brand-green-pressed);
+  --color-brand-green-disabled: var(--brand-green-disabled);
   --color-neutral-100: var(--neutral-100);
   --color-neutral-70: var(--neutral-70);
   --color-neutral-50: var(--neutral-50);
@@ -124,5 +135,98 @@
   }
   .shadow-card {
     box-shadow: var(--card-shadow);
+  }
+}
+
+/* Figma L Button + Menu/Cart — variant-классы с дефисами в токенах не парсятся в Tailwind v4 */
+@layer components {
+  .ui-client-primary {
+    display: flex;
+    width: 100%;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    padding: 14px 12px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    line-height: 16px;
+    font-weight: 700;
+    color: #fff;
+    background-color: var(--brand-green);
+    transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  .ui-client-primary:hover:not(:disabled) {
+    background-color: var(--brand-green-hover);
+  }
+
+  .ui-client-primary:active:not(:disabled) {
+    background-color: var(--brand-green-pressed);
+  }
+
+  .ui-client-primary:disabled {
+    background-color: var(--brand-green-disabled);
+    cursor: not-allowed;
+  }
+
+  .ui-header-menu-btn {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background-color: var(--brand-menu);
+    color: #fff;
+    transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .ui-header-menu-btn:hover:not([aria-current="page"]) {
+    background-color: var(--brand-menu-hover);
+  }
+
+  /* Выбранный раздел — цвет Figma Pressed, без залипания :active на других кнопках */
+  .ui-header-menu-btn[aria-current="page"],
+  .ui-header-menu-btn[aria-current="page"]:hover,
+  .ui-header-menu-btn[aria-current="page"]:active,
+  .ui-header-menu-btn[aria-current="page"]:focus,
+  .ui-header-menu-btn[aria-current="page"]:focus-visible {
+    background-color: var(--brand-menu-pressed);
+  }
+
+  .ui-client-primary--inline {
+    display: inline-flex;
+    width: auto;
+  }
+
+  .ui-header-menu-btn--icon {
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+  }
+
+  .ui-header-menu-btn--cart {
+    gap: 8px;
+    padding: 8px 20px 8px 12px;
+  }
+
+  .ui-header-menu-chip {
+    pointer-events: none;
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    display: flex;
+    min-width: 16px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background-color: #fef6e4;
+    padding: 2px 4px 3px;
+    font-size: 13px;
+    line-height: 12px;
+    font-weight: 700;
+    color: var(--brand-header);
   }
 }

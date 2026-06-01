@@ -1,24 +1,46 @@
-import * as React from "react"
+"use client"
 
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import type { ComponentProps, ReactNode } from "react"
+
+import { navIsActive } from "@/lib/nav-is-active"
 import { cn } from "@/lib/utils"
 
-type MenuButtonProps = React.ComponentProps<"div"> & {
+type MenuButtonProps = ComponentProps<typeof Link> & {
   chipCount?: number
+  children: ReactNode
 }
 
-/** Figma Components / Menu button (276:311) */
-function MenuButton({ className, chipCount = 0, children, ...props }: MenuButtonProps) {
+/** Figma Menu button (276:311 / 705:985) */
+function MenuButton({
+  className,
+  chipCount = 0,
+  children,
+  href,
+  ...props
+}: MenuButtonProps) {
+  const pathname = usePathname()
+  const hrefString = typeof href === "string" ? href : (href?.pathname ?? "")
+  const isCurrent = hrefString ? navIsActive(pathname, hrefString) : false
+
   return (
-    <div className={cn("relative inline-flex shrink-0", className)} {...props}>
-      <div className="flex size-9 items-center justify-center rounded-lg bg-brand-menu p-2 text-white">
-        {children}
-      </div>
+    <Link
+      href={href}
+      aria-current={isCurrent ? "page" : undefined}
+      className={cn(
+        "ui-header-menu-btn ui-header-menu-btn--icon outline-none focus-visible:ring-2 focus-visible:ring-focus",
+        className
+      )}
+      {...props}
+    >
+      {children}
       {chipCount > 0 ? (
-        <span className="absolute -top-1.5 -right-1 flex min-w-4 items-center justify-center rounded-[10px] bg-[#fef6e4] px-1 pt-0.5 pb-0.5 text-[13px] leading-3 font-bold text-brand-header">
+        <span className="ui-header-menu-chip">
           {chipCount > 99 ? "99+" : chipCount}
         </span>
       ) : null}
-    </div>
+    </Link>
   )
 }
 

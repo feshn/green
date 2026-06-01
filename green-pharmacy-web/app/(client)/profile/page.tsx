@@ -1,22 +1,14 @@
-import Link from "next/link"
 import { redirect } from "next/navigation"
 import { User } from "lucide-react"
 
 import { StaffHintBanner } from "@/components/auth/staff-hint-banner"
+import { ClientPageHeader } from "@/components/client/client-page-header"
 import { LoginRequiredCard } from "@/components/client/login-required-card"
 import { signOutClientAction } from "@/lib/auth/client-actions"
 import { formatPhoneDisplay } from "@/lib/auth/client-phone"
 import { isLoggedInClient } from "@/lib/auth/client-access"
 import { getClientSession } from "@/lib/auth/client-session"
-import { Button, buttonVariants } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/server"
 
 type PageProps = {
@@ -50,40 +42,52 @@ export default async function ProfilePage({ searchParams }: PageProps) {
   return (
     <>
       <StaffHintBanner staff={staff} />
-      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center gap-4 p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-[family-name:var(--font-display)]">
-              <User className="size-5" aria-hidden />
-              Профиль
-            </CardTitle>
-            <CardDescription>Краткая информация и выход из аккаунта.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <dl className="space-y-2 text-sm">
-              <div>
-                <dt className="text-muted-foreground">Имя</dt>
-                <dd className="font-medium">{profile?.name ?? "—"}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Телефон</dt>
-                <dd className="font-medium">
-                  {profile?.phone ? formatPhoneDisplay(profile.phone) : "—"}
-                </dd>
-              </div>
-            </dl>
-            <div className="flex flex-wrap gap-2">
-              <Link href="/" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-                В каталог
-              </Link>
-              <form action={signOutClientAction}>
-                <Button type="submit" variant="secondary" size="sm">
-                  Выйти
-                </Button>
-              </form>
+      <div className="mx-auto w-full max-w-[1053px] flex-1 px-4 pb-6 sm:px-6 lg:px-0">
+        <ClientPageHeader title="Профиль" />
+
+        <div className="mt-5 flex flex-col gap-4">
+        <section className="rounded-[12px] border border-border bg-white p-4 shadow-card">
+          <div className="flex items-center gap-3">
+            <div className="flex size-12 items-center justify-center rounded-full bg-brand-header/10 text-brand-header">
+              <User className="size-6" aria-hidden />
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <p className="font-display text-lg font-bold text-neutral-100">
+                {profile?.name ?? "—"}
+              </p>
+              <p className="text-sm text-neutral-50">
+                {profile?.phone ? formatPhoneDisplay(profile.phone) : "—"}
+              </p>
+            </div>
+          </div>
+
+          <dl className="mt-4 space-y-4 border-t border-border pt-4 text-sm">
+            <div>
+              <dt className="text-neutral-50">Имя</dt>
+              <dd className="mt-1 font-medium text-neutral-100">{profile?.name ?? "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-neutral-50">Телефон</dt>
+              <dd className="mt-1 font-medium text-neutral-100">
+                {profile?.phone ? formatPhoneDisplay(profile.phone) : "—"}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section className="rounded-[12px] border border-border bg-white p-4 shadow-card">
+          <h2 className="font-display text-base font-bold text-neutral-100">Поддержка</h2>
+          <p className="mt-2 text-sm text-neutral-50">
+            Чат и звонок в поддержку — заглушка (MVP).
+          </p>
+        </section>
+
+        <form action={signOutClientAction}>
+          <Button type="submit" variant="secondary" size="sm">
+            Выйти
+          </Button>
+        </form>
+        </div>
       </div>
     </>
   )

@@ -65,3 +65,22 @@ alwaysApply: false
 ## Отчёт агента
 
 Если элемент не из shadcn/Figma/токенов — в конце ответа блок **«Не из kit»**: что сделано кастомом, node-id Figma (если есть).
+
+## Иконки — канон (после E3)
+### Использовать
+- React-компоненты: `components/icons/trash.tsx`, `minus.tsx`, `pin.tsx`, `plus-button.tsx`, `arrow-down-24.tsx`, `check-20.tsx`, …
+- Обёртка слота: `components/icons/icon-slot.tsx` (`IconSlot`, 24×24)
+- Цвет: `currentColor` / `className="text-neutral-100"` — не хардкод fill в JSX без причины
+### Запрещено без явной просьбы
+- `<img src="/icons/...">`, PNG из `public/icons/figma/`
+- Подключать корзину/checkout-иконки через `public/icons/*.svg` и UiIcon с растягиванием на 100%
+- Перерисовывать иконки с нуля, если есть `*.tsx` в `components/icons/`
+- Менять `preserveAspectRatio`, подставлять Figma-экспорт с `width="100%" height="100%"` в runtime
+### Исходники Figma
+- `components/icons/Trash.svg`, `Minus.svg`, `Pin.svg`, `Plus button.svg`, `Check 20.svg` — **только reference** для правок path в соответствующем `.tsx`
+- Новая иконка: скопировать path → новый `icon-name.tsx` с корректным `viewBox`, не новый `<img>`
+### Если иконки «кривые»
+1. Проверить, что импорт из `components/icons/*.tsx`, не из `public/`
+2. Обернуть в `IconSlot` или задать `size-5` / `size-6` на `<svg>`
+3. Не растягивать не-квадратный viewBox в квадратный слот
+В конце задачи с новыми иконками — перечислить добавленные `*.tsx`, не трогали ли `public/icons`.

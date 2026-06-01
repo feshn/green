@@ -34,7 +34,8 @@ export type CatalogSort = "popular" | "price_asc" | "price_desc"
 
 export type CatalogFilters = {
   q?: string
-  category?: string
+  /** Одна или несколько категорий (имена из `categories.name`) */
+  categories?: string[]
   sort?: CatalogSort
 }
 
