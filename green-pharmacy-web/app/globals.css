@@ -3,26 +3,42 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Figma tokens — Ready page / Components */
 :root {
-  --background: oklch(0.99 0.002 145);
-  --foreground: oklch(0.2 0.02 145);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 145);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 145);
-  --primary: oklch(0.45 0.12 145);
-  --primary-foreground: oklch(0.99 0.002 145);
-  --secondary: oklch(0.96 0.01 145);
-  --secondary-foreground: oklch(0.25 0.03 145);
-  --muted: oklch(0.96 0.008 145);
-  --muted-foreground: oklch(0.5 0.02 145);
-  --accent: oklch(0.94 0.02 145);
-  --accent-foreground: oklch(0.25 0.03 145);
-  --destructive: oklch(0.55 0.2 25);
-  --border: oklch(0.9 0.01 145);
-  --input: oklch(0.9 0.01 145);
-  --ring: oklch(0.45 0.12 145);
-  --radius: 0.625rem;
+  --page-bg: #f3f6f5;
+  --brand-header: #307f6a;
+  --brand-menu: #4fa08b;
+  --brand-green: #1aa481;
+  --brand-green-disabled: rgba(26, 164, 129, 0.3);
+  --neutral-100: #101915;
+  --neutral-70: #4d4d4d;
+  --neutral-50: #747c7a;
+  --neutral-30: #b3b7b6;
+  --focus: #51aeff;
+  --search-surface: #fdfefe;
+  --search-placeholder: #909695;
+  --surface-muted: #e8edec;
+  --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.02);
+
+  --background: var(--page-bg);
+  --foreground: var(--neutral-100);
+  --card: #ffffff;
+  --card-foreground: var(--neutral-100);
+  --popover: #ffffff;
+  --popover-foreground: var(--neutral-100);
+  --primary: var(--brand-green);
+  --primary-foreground: #ffffff;
+  --secondary: var(--surface-muted);
+  --secondary-foreground: var(--neutral-100);
+  --muted: var(--page-bg);
+  --muted-foreground: var(--neutral-50);
+  --accent: var(--surface-muted);
+  --accent-foreground: var(--neutral-100);
+  --destructive: #e5484d;
+  --border: #e8edec;
+  --input: #e8edec;
+  --ring: var(--focus);
+  --radius: 0.75rem;
 }
 
 .dark {
@@ -65,12 +81,26 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-page: var(--page-bg);
+  --color-brand-header: var(--brand-header);
+  --color-brand-menu: var(--brand-menu);
+  --color-brand-green: var(--brand-green);
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-70: var(--neutral-70);
+  --color-neutral-50: var(--neutral-50);
+  --color-neutral-30: var(--neutral-30);
+  --color-focus: var(--focus);
+  --color-search-surface: var(--search-surface);
+  --color-search-placeholder: var(--search-placeholder);
+  --color-surface-muted: var(--surface-muted);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: 1rem;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-evolventa), var(--font-inter), ui-sans-serif, sans-serif;
+  --shadow-card: var(--card-shadow);
 }
 
 @layer base {
@@ -78,11 +108,21 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-page text-foreground font-sans;
   }
   h1,
   h2,
   h3 {
     font-family: var(--font-display);
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+  .shadow-card {
+    box-shadow: var(--card-shadow);
   }
 }

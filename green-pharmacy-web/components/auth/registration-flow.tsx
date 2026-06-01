@@ -1,33 +1,34 @@
 "use client"
 
+import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
+import { CodeSegmentInput } from "@/components/auth/code-segment-input"
+import { PhoneMaskInput } from "@/components/auth/phone-mask-input"
 import {
   requestAuthCodeAction,
   saveClientProfileAction,
   verifyCodeAndSignInAction,
 } from "@/lib/auth/client-actions"
-import { formatPhoneDisplay, normalizePhone } from "@/lib/auth/client-phone"
+import {
+  formatPhoneRegistration,
+  normalizePhone,
+} from "@/lib/auth/client-phone"
 import {
   codeFormSchema,
   phoneFormSchema,
   profileSchema,
   type ProfileFormValues,
 } from "@/lib/validations/registration"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import {
+  TEXT_FIELD_ERROR_SLOT_CLASS,
+  TextField,
+  TextFieldInput,
+} from "@/components/ui/text-field"
 import { cn } from "@/lib/utils"
 
 const PHONE_STORAGE_KEY = "green-reg-phone"
@@ -38,6 +39,9 @@ type RegistrationFlowProps = {
   initialStep: RegistrationStep
   initialPhone?: string
 }
+
+const PRIMARY_BTN_CLASS =
+  "flex h-11 w-full items-center justify-center rounded-lg bg-brand-green px-3 font-display text-sm font-bold leading-4 text-white transition-colors disabled:cursor-not-allowed disabled:bg-brand-green-disabled"
 
 export function RegistrationFlow({
   initialStep,
@@ -53,7 +57,7 @@ export function RegistrationFlow({
 
   const phoneForm = useForm<{ phone: string }>({
     resolver: zodResolver(phoneFormSchema),
-    defaultValues: { phone: initialPhone },
+    defaultValues: { phone: "" },
   })
 
   const codeForm = useForm<{ code: string }>({
@@ -64,7 +68,28 @@ export function RegistrationFlow({
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: { name: "", opdAccepted: false },
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
   })
+
+  const phoneDigits = phoneForm.watch("phone")
+  const codeValue = codeForm.watch("code")
+  const opdAccepted = profileForm.watch("opdAccepted")
+  const phoneFieldError = phoneForm.formState.errors.phone?.message
+  const codeFieldError =
+    codeForm.formState.isSubmitted
+      ? codeForm.formState.errors.code?.message
+      : undefined
+  const nameFieldError =
+    profileForm.formState.isSubmitted
+      ? profileForm.formState.errors.name?.message
+      : undefined
+  const opdFieldError =
+    profileForm.formState.isSubmitted
+      ? profileForm.formState.errors.opdAccepted?.message
+      : undefined
+  const profileRootError = profileForm.formState.errors.root?.message
+  const consentAlert = opdFieldError || profileRootError
 
   useEffect(() => {
     const stored = sessionStorage.getItem(PHONE_STORAGE_KEY)
@@ -74,7 +99,6 @@ export function RegistrationFlow({
     if (digits.length === 10) {
       phoneForm.setValue("phone", digits)
     }
-    // Только при монтировании: phoneForm в deps вызывал бесконечный re-render («Rendering…»).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -93,16 +117,27 @@ export function RegistrationFlow({
     }
   }, [])
 
-  const onRequestCode = phoneForm.handleSubmit(async ({ phone: raw }) => {
+  const goToPhoneStep = useCallback(() => {
+    setStep("phone")
+    setCodeError(null)
+    setAttemptsLeft(null)
+    codeForm.reset({ code: "" })
+    const digits = phone.replace(/\D/g, "").slice(-10)
+    if (digits.length === 10) {
+      phoneForm.setValue("phone", digits, { shouldValidate: false })
+    }
+  }, [codeForm, phone, phoneForm])
+
+  const onRequestCode = phoneForm.handleSubmit(async ({ phone: digits }) => {
     setBusy(true)
     setCodeError(null)
-    const result = await requestAuthCodeAction(raw)
+    const result = await requestAuthCodeAction(digits)
     setBusy(false)
     if (!result.ok) {
       phoneForm.setError("phone", { message: result.message })
       return
     }
-    const normalized = normalizePhone(raw)
+    const normalized = normalizePhone(digits)
     if (!normalized) {
       phoneForm.setError("phone", { message: "Некорректный номер телефона" })
       return
@@ -161,185 +196,186 @@ export function RegistrationFlow({
     router.replace("/")
   })
 
-  const stepTitle =
-    step === "phone"
-      ? "Вход по телефону"
-      : step === "code"
-        ? "Код из SMS"
-        : "Ваш профиль"
+  if (step === "phone") {
+    return (
+      <form onSubmit={onRequestCode} className="mx-auto w-full max-w-[372px]">
+        <div className="flex h-[282px] flex-col justify-between">
+          <div className="flex flex-col gap-6">
+            <h1 className="font-display text-[30px] leading-9 font-bold text-neutral-100">
+              Вход по номеру
+              <br />
+              мобильного телефона
+            </h1>
+            <TextField
+              label="Телефон"
+              htmlFor="phone"
+              error={phoneFieldError}
+            >
+              <PhoneMaskInput
+                id="phone"
+                value={phoneDigits}
+                onChange={(digits) => {
+                  phoneForm.setValue("phone", digits, { shouldValidate: false })
+                  phoneForm.clearErrors("phone")
+                }}
+                onBlur={() => phoneForm.trigger("phone")}
+                hasError={Boolean(phoneFieldError)}
+                disabled={busy}
+              />
+            </TextField>
+          </div>
+          <button
+            type="submit"
+            className={PRIMARY_BTN_CLASS}
+            disabled={busy || phoneDigits.length !== 10}
+          >
+            {busy ? "Отправка…" : "Получить код"}
+          </button>
+        </div>
+      </form>
+    )
+  }
 
-  const stepDescription =
-    step === "phone"
-      ? "Registration 01 — мы отправим одноразовый код (в MVP код в таблице auth_codes)."
-      : step === "code"
-        ? codeError
-          ? "Registration 03 — неверный код."
-          : "Registration 02 — введите 6 цифр."
-        : "Registration 04 — имя и согласие на обработку данных."
+  if (step === "code") {
+    const alertText = codeError
+      ? `${codeError}${attemptsLeft != null ? ` Осталось попыток: ${attemptsLeft}.` : ""}`
+      : codeFieldError || null
 
-  return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="font-[family-name:var(--font-display)] text-2xl">
-          {stepTitle}
-        </CardTitle>
-        <CardDescription>{stepDescription}</CardDescription>
-        {step !== "phone" && phone ? (
-          <p className="text-muted-foreground text-sm">
-            {formatPhoneDisplay(phone)}
-            {step === "code" ? (
+    return (
+      <form onSubmit={onVerifyCode} className="mx-auto w-full max-w-[376px]">
+        <div className="flex h-[282px] flex-col justify-between">
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <h1 className="font-display text-[30px] leading-9 font-bold text-neutral-100">
+                Код из смс
+              </h1>
+              <p className="text-base leading-6 font-medium text-neutral-50">
+                Отправили на номер {formatPhoneRegistration(phone)}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2">
+                <CodeSegmentInput
+                  value={codeValue}
+                  onChange={(value) => {
+                    codeForm.setValue("code", value, { shouldValidate: false })
+                    codeForm.clearErrors("code")
+                    setCodeError(null)
+                  }}
+                  hasError={Boolean(alertText)}
+                  disabled={busy}
+                />
+                <p
+                  className={cn(
+                    TEXT_FIELD_ERROR_SLOT_CLASS,
+                    alertText ? "text-destructive" : "text-transparent"
+                  )}
+                  role={alertText ? "alert" : undefined}
+                >
+                  {alertText || "Неверный код"}
+                </p>
+              </div>
               <button
                 type="button"
-                className="text-primary ml-2 underline underline-offset-2"
-                onClick={() => {
-                  setStep("phone")
-                  setCodeError(null)
-                  setPhone("")
-                  codeForm.reset({ code: "" })
-                  if (typeof window !== "undefined") {
-                    sessionStorage.removeItem(PHONE_STORAGE_KEY)
-                  }
-                }}
+                className="self-start py-2 pr-2 text-[13px] leading-4 font-semibold text-neutral-100 underline underline-offset-2 disabled:opacity-50"
+                disabled={busy || resendCooldown > 0}
+                onClick={onResend}
               >
-                Изменить
+                {resendCooldown > 0
+                  ? `Запросить повторно (${resendCooldown} с)`
+                  : "Запросить повторно"}
               </button>
-            ) : null}
-          </p>
-        ) : null}
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {step === "phone" ? (
-          <form onSubmit={onRequestCode} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">Телефон</Label>
-              <div className="flex gap-2">
-                <span className="text-muted-foreground flex h-8 items-center rounded-lg border border-input px-2.5 text-sm">
-                  +7
-                </span>
-                <Input
-                  id="phone"
-                  type="tel"
-                  inputMode="numeric"
-                  autoComplete="tel"
-                  placeholder="900 000-00-00"
-                  aria-invalid={!!phoneForm.formState.errors.phone}
-                  {...phoneForm.register("phone")}
-                />
-              </div>
-              {phoneForm.formState.errors.phone ? (
-                <p className="text-destructive text-sm">
-                  {phoneForm.formState.errors.phone.message}
-                </p>
-              ) : null}
             </div>
-            <Button type="submit" className="w-full" size="lg" disabled={busy}>
-              {busy ? "Отправка…" : "Получить код"}
-            </Button>
-          </form>
-        ) : null}
+          </div>
 
-        {step === "code" ? (
-          <form onSubmit={onVerifyCode} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="code">Код подтверждения</Label>
-              <Input
-                id="code"
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={6}
-                placeholder="000000"
-                className={cn(
-                  "tracking-[0.4em] text-center font-mono text-lg",
-                  codeError && "border-destructive"
-                )}
-                aria-invalid={!!codeError || !!codeForm.formState.errors.code}
-                {...codeForm.register("code", {
-                  onChange: (e) => {
-                    const v = e.target.value.replace(/\D/g, "").slice(0, 6)
-                    e.target.value = v
-                    codeForm.setValue("code", v)
-                  },
-                })}
-              />
-              {codeForm.formState.errors.code ? (
-                <p className="text-destructive text-sm">
-                  {codeForm.formState.errors.code.message}
-                </p>
-              ) : null}
-              {codeError ? (
-                <p className="text-destructive text-sm" role="alert">
-                  {codeError}
-                  {attemptsLeft != null
-                    ? ` Осталось попыток: ${attemptsLeft}.`
-                    : null}
-                </p>
-              ) : null}
-            </div>
-            <Button type="submit" className="w-full" size="lg" disabled={busy}>
-              {busy ? "Проверка…" : "Подтвердить"}
-            </Button>
-            <Button
+          <div className="flex items-center gap-3">
+            <button
               type="button"
-              variant="outline"
-              className="w-full"
-              disabled={busy || resendCooldown > 0}
-              onClick={onResend}
+              className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-surface-muted text-neutral-100"
+              onClick={goToPhoneStep}
+              aria-label="Назад"
             >
-              {resendCooldown > 0
-                ? `Отправить снова (${resendCooldown} с)`
-                : "Отправить код снова"}
-            </Button>
-          </form>
-        ) : null}
+              <ArrowLeft className="size-6" aria-hidden />
+            </button>
+            <button
+              type="submit"
+              className={cn(PRIMARY_BTN_CLASS, "flex-1")}
+              disabled={busy || codeValue.length !== 6}
+            >
+              {busy ? "Проверка…" : "Продолжить"}
+            </button>
+          </div>
+        </div>
+      </form>
+    )
+  }
 
-        {step === "profile" ? (
-          <form onSubmit={onSaveProfile} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Имя</Label>
-              <Input
+  return (
+    <form onSubmit={onSaveProfile} className="mx-auto w-full max-w-[372px]">
+      <div className="flex h-[282px] flex-col justify-between">
+        <div className="flex h-[178px] flex-col justify-between">
+          <div className="flex flex-col gap-6">
+            <h1 className="font-display text-[30px] leading-9 font-bold text-neutral-100">
+              Как к вам обращаться?
+            </h1>
+            <TextField label="Ваше имя" htmlFor="name" error={nameFieldError}>
+              <TextFieldInput
                 id="name"
                 autoComplete="name"
                 placeholder="Как к вам обращаться"
-                aria-invalid={!!profileForm.formState.errors.name}
-                {...profileForm.register("name")}
+                hasError={Boolean(nameFieldError)}
+                disabled={busy}
+                {...profileForm.register("name", {
+                  onChange: (event) => {
+                    event.target.value = event.target.value.replace(
+                      /[^\p{L}\s-]/gu,
+                      ""
+                    )
+                  },
+                })}
               />
-              {profileForm.formState.errors.name ? (
-                <p className="text-destructive text-sm">
-                  {profileForm.formState.errors.name.message}
-                </p>
-              ) : null}
-            </div>
-            <div className="flex items-start gap-3">
+            </TextField>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-1">
               <Checkbox
                 id="opd"
-                checked={profileForm.watch("opdAccepted")}
-                onCheckedChange={(checked) =>
+                checked={opdAccepted}
+                hasError={Boolean(opdFieldError) && !opdAccepted}
+                onCheckedChange={(checked) => {
                   profileForm.setValue("opdAccepted", checked === true, {
-                    shouldValidate: true,
+                    shouldValidate: false,
                   })
-                }
+                  if (checked === true) {
+                    profileForm.clearErrors("opdAccepted")
+                  }
+                }}
               />
-              <Label htmlFor="opd" className="font-normal leading-snug">
-                Согласен(на) на обработку персональных данных (ОПД)
-              </Label>
+              <label
+                htmlFor="opd"
+                className="cursor-pointer text-[13px] leading-4 font-medium text-neutral-50"
+              >
+                Согласие на обработку персональных данных
+              </label>
             </div>
-            {profileForm.formState.errors.opdAccepted ? (
-              <p className="text-destructive text-sm">
-                {profileForm.formState.errors.opdAccepted.message}
-              </p>
-            ) : null}
-            {profileForm.formState.errors.root ? (
-              <p className="text-destructive text-sm" role="alert">
-                {profileForm.formState.errors.root.message}
-              </p>
-            ) : null}
-            <Button type="submit" className="w-full" size="lg" disabled={busy}>
-              {busy ? "Сохранение…" : "Продолжить"}
-            </Button>
-          </form>
-        ) : null}
-      </CardContent>
-    </Card>
+            <p
+              className={cn(
+                TEXT_FIELD_ERROR_SLOT_CLASS,
+                consentAlert ? "text-destructive" : "text-transparent"
+              )}
+              role={consentAlert ? "alert" : undefined}
+            >
+              {consentAlert || "Нужно согласие"}
+            </p>
+          </div>
+        </div>
+
+        <button type="submit" className={PRIMARY_BTN_CLASS} disabled={busy}>
+          {busy ? "Сохранение…" : "Зарегистрироваться"}
+        </button>
+      </div>
+    </form>
   )
 }

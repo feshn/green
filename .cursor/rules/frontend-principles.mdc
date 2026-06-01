@@ -30,12 +30,15 @@ alwaysApply: false
 
 ## UI-kit
 
+- **Baseline:** см. `docs/UI_BASELINE.md` и `.cursor/rules/green-ui-baseline.mdc` — не дублировать компоненты Card/каталога.
 - **shadcn/ui** — единственный базовый kit; кастом — в `components/` поверх ui.
 - **Типографика:** Inter (body), Evolventa (display) — как в Figma `docs/screens.md`.
 - **Иконки:** Majesticons / Iconify (не смешивать наборы на одном экране).
 - **Таблицы staff:** TanStack Table + shadcn Table primitives.
 - **Формы:** React Hook Form + Zod; схемы рядом с feature или в `lib/validations/`.
 - **Figma** — источник визуала; не хардкодить hex вне `globals.css` / theme tokens.
+- **Пиксели:** только целые значения (44px, не 44.09); сетка 4/8px; `h-11` вместо `py-[14px]`; без дробного `tracking-[0.3px]`.
+- **Evolventa Bold:** заголовки и основные кнопки — `font-display` (локальный шрифт из `public/fonts/evolventa/`).
 
 ## Запрещено без согласования
 

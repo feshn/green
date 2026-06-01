@@ -39,7 +39,7 @@ export default async function RegisterPage({ searchParams }: PageProps) {
     return (
       <>
         <StaffHintBanner staff={staff} />
-        <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center p-6">
+        <div className="flex min-h-dvh flex-1 flex-col items-center justify-center bg-page px-4 py-8 -mt-[104px]">
           <RegistrationFlow
             initialStep="profile"
             initialPhone={profile?.phone ?? phoneFromUserMetadata(user) ?? ""}
@@ -52,7 +52,7 @@ export default async function RegisterPage({ searchParams }: PageProps) {
   return (
     <>
       <StaffHintBanner staff={staff} />
-      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center p-6">
+      <div className="flex min-h-dvh flex-1 flex-col items-center justify-center bg-page px-4 py-8 -mt-[104px]">
         <RegistrationFlow initialStep="phone" />
       </div>
     </>

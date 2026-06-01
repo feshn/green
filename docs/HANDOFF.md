@@ -10,6 +10,7 @@
 
 **Figma:** [https://www.figma.com/design/rzkHWJsXsgN36q3P8mrkAA/Green?node-id=2-2](https://www.figma.com/design/rzkHWJsXsgN36q3P8mrkAA/Green?node-id=2-2)  
 **Экраны (29):** [screens.md](./screens.md)  
+**UI baseline (фронт, зафиксировано):** [UI_BASELINE.md](./UI_BASELINE.md)  
 Репозиторий: `green` (GitHub) / локально `~/Documents/green`
 
 ---
@@ -30,31 +31,31 @@
 | Deploy        | Vercel + Supabase Cloud                                               |
 
 
-**Репозиторий БД (этот):** `green-db`  
-**Фронт (создать):** `green-web` — sibling или отдельный repo
+**Monorepo:** DDL в корне `green/`, фронт в `green-pharmacy-web/`
 
 ---
 
 ## Структура репозитория
 
 ```
-green-pharmacy-db/
+green/
+├── green-pharmacy-web/     # Next.js фронт (см. UI_BASELINE.md)
 ├── supabase/
-│   ├── migrations/     # 000001 … 000005 — источник истины DDL
+│   ├── migrations/         # 000001 … — источник истины DDL
 │   ├── seed.sql
 │   ├── queries/coursework_08.sql
 │   └── tests/verify_setup.sql
 ├── docs/
-│   ├── HANDOFF.md      # этот файл
+│   ├── HANDOFF.md
+│   ├── UI_BASELINE.md      # зафиксированный UI: каталог + Card
 │   ├── screens.md
+│   ├── seed-card-demo.sql
 │   ├── BASELINE_AND_DELTA.md
 │   └── BACKUP_AND_VERIFY.md
-├── scripts/backup.sh
-├── schema.sql          # указатель на migrations (не полный дамп)
-└── .cursor/rules/
-├── sql/              # legacy; актуально supabase/migrations/
+├── sql/                    # legacy; актуально supabase/migrations/
+├── schema.sql
 ├── README.md
-└── supabase/config.toml
+└── .cursor/rules/          # green-pharmacy.mdc, frontend-principles.mdc, green-ui-baseline.mdc
 ```
 
 **Накат SQL:** см. [README.md](../README.md). Если БД уже в Supabase с ранними шагами — повторно **не** гонять `000001`; применять `000002`–`000005` и сверить `tests/verify_setup.sql`.
@@ -77,15 +78,17 @@ green-pharmacy-db/
 - Клиент: `users.id` = `auth.uid()` после 2FA
 - Скрин backup для пояснительной
 
-### Фронтенд (следующий этап)
+### Фронтенд
 
-- `create-next-app` + shadcn + Supabase SSR
-- Middleware: роли `/admin`, `/picker`, `/courier`
-- Registration 01–04
-- Main / Sort / Card / Checkout / Profile / Orders
-- Staff login + Admin + Sortet + Delivery
-- Заглушки: оплата → `paid`, лайк
-- Фаза 2: карта ПВЗ
+- [x] Next.js + shadcn + Supabase SSR + middleware ролей
+- [x] Registration 01–04 (2FA, `CLIENT_AUTH_PEPPER`)
+- [x] Main / Search / Sort — каталог, фильтры, хедер ([UI_BASELINE.md](./UI_BASELINE.md))
+- [x] Card 01 — `/products/[id]`: галерея, инфо, рекомендации; «В корзину» disabled
+- [x] Заглушки `/cart`, `/orders`, `/profile`
+- [ ] **E3:** Checkout 01–04, корзина, orders, активная «В корзину», оплата → `paid`
+- [ ] Staff login + Admin + Sortet + Delivery
+- [ ] Заглушки: SMS; лайк (частично на Card)
+- [ ] Фаза 2: карта ПВЗ
 
 ---
 
@@ -170,9 +173,13 @@ Service role — только server-side, никогда в клиенте.
 
 ---
 
-## Следующий чат — одна строка
+## Следующий чат — одна строка (E3)
 
 ```
-@green-pharmacy-db/docs/HANDOFF.md @green-pharmacy-db/docs/screens.md @green-pharmacy-db/supabase/migrations — собери Next.js green-pharmacy-web по стеку из HANDOFF
+@docs/HANDOFF.md @docs/UI_BASELINE.md @docs/screens.md
+@.cursor/rules/green-ui-baseline.mdc @.cursor/rules/frontend-principles.mdc
+@green-pharmacy-web
+
+UI baseline зафиксирован — не дублируй компоненты каталога/Card. Только E3: корзина, checkout, orders.
 ```
 

@@ -3,7 +3,8 @@
 Фронтенд **Green Pharmacy** — Next.js App Router, Supabase SSR, shadcn/ui.
 
 **Путь в репозитории:** `green-pharmacy-web/` (monorepo рядом с DDL в `supabase/`).  
-Бэкенд и миграции: корень репозитория `green` → [docs/HANDOFF.md](../docs/HANDOFF.md).
+Бэкенд и миграции: корень репозитория `green` → [docs/HANDOFF.md](../docs/HANDOFF.md).  
+**UI baseline (не дублировать компоненты):** [docs/UI_BASELINE.md](../docs/UI_BASELINE.md).
 
 ## Стек
 
